@@ -1,8 +1,11 @@
 package com.mawinda.simplecsv
 
+import android.content.Context
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import timber.log.Timber
+import java.io.IOException
+import java.io.OutputStreamWriter
 import kotlin.reflect.full.memberProperties
 
 class MainActivity : AppCompatActivity() {
@@ -20,26 +23,62 @@ class MainActivity : AppCompatActivity() {
             val e: String
         )
 
-        val instance = DataClass("A", "B", "C", "D", "E")
+        val instance = listOf(
+            DataClass("A", "B", "C", "D", "E"),
+            DataClass("B", "B", "C", "D", "E"),
+            DataClass("C", "B", "C", "D", "E"),
+            DataClass("D", "B", "C", "D", "E")
+        )
 
-        val list = dataClassToList(instance)
-        Timber.i("Data: ${list.joinToString(",")}")
+        val mData = instance.toCsvData()
+        Timber.i("SCV DATA:\n$mData")
 
-//        DataClass::class.memberProperties.forEach { member ->
-//            val name = member.name
-//            val value = member.get(instance) as String
-//
-//            Timber.i("name: $name ,value: $value")
-//
-//        }
     }
 
-    private inline fun <reified T : Any> dataClassToList(data: T): List<String> {
+
+    private inline fun <reified T : Any> List<T>.toCsvData(): String {
+        return when {
+            this.isEmpty() -> throw Exception("List is Empty")
+            else -> {
+                this.toRawData().rawDataToCsvData()
+            }
+        }
+
+    }
+
+    private fun List<List<String>>.rawDataToCsvData(): String {
+        val listOfRows = this.map { it.joinToString(",") }
+        return listOfRows.joinToString("\n")
+    }
+
+
+    private inline fun <reified T : Any> List<T>.toRawData(): List<List<String>> {
+        val data: MutableList<List<String>> = mutableListOf()
+        val labels = this.first().dataClassParametersToList()
+        data.add(0, labels)
+        val inputs = this.map { it.dataClassInputsToList() }
+        data.addAll(inputs)
+        return data.toList()
+    }
+
+
+    private inline fun <reified T : Any> T.dataClassParametersToList(): List<String> {
         return when {
             T::class.isData.not() -> throw UnsupportedClassVersionError("Class Not a Data Class")
             else -> {
                 T::class.memberProperties.map {
-                    it.get(data) as String
+                    it.name
+                }
+            }
+        }
+    }
+
+    private inline fun <reified T : Any> T.dataClassInputsToList(): List<String> {
+        return when {
+            T::class.isData.not() -> throw UnsupportedClassVersionError("Class Not a Data Class")
+            else -> {
+                T::class.memberProperties.map {
+                    it.get(this) as String
                 }
             }
         }
