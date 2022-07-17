@@ -14,9 +14,14 @@ class MainActivity : AppCompatActivity() {
 
 
         //List
-        val instance = listOf(
+        val instance = listOf(  Message(
+            number = "0700000123",
+            body = "This is a sample msg",
+            date = System.nanoTime().toString(),
+            id = "dsssssds"
+        ),
             Message(
-                number = "0722149976",
+                number = "0700000000",
                 body = "This is a sample msg",
                 date = System.nanoTime().toString(),
                 id = "dsssssds"
@@ -54,7 +59,7 @@ class MainActivity : AppCompatActivity() {
         )
 
 
-        val mFile = CsvUtils.toCsvFile(this, instance, "messages_list")
+        val mFile = CsvUtils.toCsvFile(this, instance, "messages_data")
         Timber.i("File Exists: ${mFile.exists()}")
 
 
